@@ -28,8 +28,8 @@ spec:
         server: 'https://kubernetes.default.svc'
       source:
         path: 'ocp1/{{recurso}}'
-        repoURL: 'ssh://git@github.com/SancorSalud/openshift-pipelines.git'
-        targetRevision: master
+        repoURL: 'ssh://git@github.com/jeanpaullb/openshift-pipelines.git'
+        targetRevision: main
       project: openshift-gitops
       syncPolicy:
         automated:
