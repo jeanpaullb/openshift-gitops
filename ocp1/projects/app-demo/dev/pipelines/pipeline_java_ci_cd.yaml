@@ -1,11 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: pipeline-java-ci
-  annotations:
-    openshift.io/display-name: Sancor Pipeline Java CI
-    description: Pipeline Java CI
-    openshift.io/provider-display-name: SanCor
+  name: pipeline-java-ci-cd
 spec:
   params:
     - default: app-api
@@ -14,10 +10,10 @@ spec:
     - default: app-demo-dev
       name: PROJECT_NAME
       type: string
-    - default: 'git@github.com:SancorSalud/example.git'
+    - default: 'git@github.com:jeanpaullb/app-demo.git'
       name: GIT_REPOSITORY
       type: string
-    - default: springboot
+    - default: springboot-helloworld
       name: GIT_BRANCH
       type: string
     - default: .
