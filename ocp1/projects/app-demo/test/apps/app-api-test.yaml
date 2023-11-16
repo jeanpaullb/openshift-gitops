@@ -14,8 +14,8 @@ items:
     project: app-demo-test
     source:
       path: app-api/openshift/overlays/test
-      repoURL: git@github.com:SancorSalud/example-gitops.git
-      targetRevision: master
+      repoURL: git@github.com/jeanpaullb/app-demo-gitops.git
+      targetRevision: main
     syncPolicy:
       syncOptions:
       - Validate=false

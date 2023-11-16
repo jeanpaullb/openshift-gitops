@@ -15,7 +15,7 @@ items:
     source:
       path: app-api/openshift/overlays/dev
       repoURL: git@github.com/jeanpaullb/app-demo-gitops.git
-      targetRevision: master
+      targetRevision: main
     syncPolicy:
       syncOptions:
       - Validate=false
