@@ -36,10 +36,6 @@ items:
       server: https://kubernetes.default.svc
     - namespace: app-demo-dev
       server: https://kubernetes.default.svc
-    - namespace: app-demo-test
-      server: https://kubernetes.default.svc
-    - namespace: app-demo-pre
-      server: https://kubernetes.default.svc
     namespaceResourceBlacklist:
     - group: ""
       kind: NetworkPolicy
