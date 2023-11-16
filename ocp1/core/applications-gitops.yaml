@@ -10,7 +10,7 @@ spec:
   source:
     path: ocp1/projects
     repoURL: 'ssh://git@github.com/jeanpaullb/app-demo-gitops.git'
-    targetRevision: master
+    targetRevision: main
   project: openshift-gitops
   syncPolicy:
     automated:

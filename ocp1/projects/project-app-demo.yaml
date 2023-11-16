@@ -74,7 +74,7 @@ items:
           directory:
             recurse: true
           path: ocp1/projects/{{project}}/{{env}}
-          repoURL: ssh://git@github.com/jeanpaullb/app-demo-gitops.git
+          repoURL: ssh://git@github.com/jeanpaullb/openshift-gitops.git
           targetRevision: main
         syncPolicy:
           syncOptions:
