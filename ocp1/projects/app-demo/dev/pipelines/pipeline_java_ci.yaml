@@ -1,0 +1,147 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline-java-ci
+  annotations:
+    openshift.io/display-name: Sancor Pipeline Java CI
+    description: Pipeline Java CI
+    openshift.io/provider-display-name: SanCor
+spec:
+  params:
+    - default: app-api
+      name: APP_NAME
+      type: string
+    - default: app-demo-dev
+      name: PROJECT_NAME
+      type: string
+    - default: 'git@github.com:SancorSalud/example.git'
+      name: GIT_REPOSITORY
+      type: string
+    - default: springboot
+      name: GIT_BRANCH
+      type: string
+    - default: .
+      name: CONTEXT_PATH
+      type: string
+    - default: '1.0.0-SNAPSHOT'
+      name: TAG_IMAGE
+      type: string
+  tasks:
+    - name: checkout
+      params:
+        - name: url
+          value: $(params.GIT_REPOSITORY)
+        - name: revision
+          value: $(params.GIT_BRANCH)
+        - name: subdirectory
+          value: ''
+        - name: deleteExisting
+          value: 'true'
+        - name: sslVerify
+          value: 'false'
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: source-code
+    - name: compile
+      params:
+        - name: MAVEN_IMAGE
+          value: 'maven:3.8-openjdk-17'
+        - name: CONTEXT_DIR
+          value: $(params.CONTEXT_PATH)
+        - name: GOALS
+          value:
+            - package
+            - '-DskipTests=true'
+      runAfter:
+        - checkout
+      taskRef:
+        kind: ClusterTask
+        name: redhat-maven
+      workspaces:
+        - name: source
+          workspace: source-code
+        - name: maven-settings
+          workspace: maven-settings
+        - name: maven-local-repo
+          workspace: maven-local-repo
+    - name: static-code-analysis
+      params:
+        - name: MAVEN_IMAGE
+          value: 'maven:3.8-openjdk-17'
+        - name: CONTEXT_PATH
+          value: $(params.CONTEXT_PATH)
+        - name: SONAR_URL
+          value: 'http://ams01-sonarqube.sonarqube.svc:9000/'
+        - name: PROJECT_KEY
+          value: $(params.APP_NAME)
+      runAfter:
+        - compile
+      taskRef:
+        kind: ClusterTask
+        name: redhat-static-code-sonar
+      workspaces:
+        - name: source-code
+          workspace: source-code
+        - name: sonar-secret
+          workspace: sonar-secret
+        - name: maven-settings
+          workspace: maven-settings
+        - name: maven-local-repo
+          workspace: maven-local-repo
+    - name: build-push-image
+      params:
+        - name: VERSION
+          value: '17'
+        - name: PATH_CONTEXT
+          value: $(workspaces.source.path)/target
+        - name: IMAGE
+          value: >-
+            image-registry.openshift-image-registry.svc:5000/$(params.PROJECT_NAME)/$(params.APP_NAME):$(params.TAG_IMAGE)
+      runAfter:
+        - static-code-analysis
+      taskRef:
+        kind: ClusterTask
+        name: redhat-s2i-java
+      workspaces:
+        - name: source
+          workspace: source-code
+    - name: trivy-scan
+      params:
+        - name: image
+          value: >-
+            image-registry.openshift-image-registry.svc:5000/$(params.PROJECT_NAME)/$(params.APP_NAME):$(params.TAG_IMAGE)
+        - name: project
+          value: $(params.PROJECT_NAME)
+      runAfter:
+        - build-push-image
+      taskRef:
+        kind: ClusterTask
+        name: trivy-scan
+      workspaces:
+        - name: trivy-db-cache
+          workspace: trivy-db-cache
+    - name: deploy-dev
+      params:
+        - name: application-name
+          value: $(params.APP_NAME)
+        - name: environment
+          value: dev
+        - name: flags
+          value: '--insecure'
+        - name: image
+          value: >-
+            image-registry.openshift-image-registry.svc:5000/$(params.PROJECT_NAME)/$(params.APP_NAME):$(params.TAG_IMAGE)
+      runAfter:
+        - trivy-scan
+      taskRef:
+        kind: ClusterTask
+        name: redhat-argocd-kustomize-sync
+  workspaces:
+    - name: source-code
+    - name: maven-settings
+    - name: maven-local-repo
+    - name: sonar-secret
+    - name: trivy-db-cache

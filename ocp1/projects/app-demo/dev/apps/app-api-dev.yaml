@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: List
+metadata: {}
+items:
+- apiVersion: argoproj.io/v1alpha1
+  kind: Application
+  metadata:
+    name: app-api-dev
+    namespace: openshift-gitops
+  spec:
+    destination:
+      namespace: app-demo-dev
+      server: https://kubernetes.default.svc
+    project: app-demo-dev
+    source:
+      path: app-api/openshift/overlays/dev
+      repoURL: git@github.com:SancorSalud/example-gitops.git
+      targetRevision: master
+    syncPolicy:
+      syncOptions:
+      - Validate=false
+      - ApplyOutOfSyncOnly=true

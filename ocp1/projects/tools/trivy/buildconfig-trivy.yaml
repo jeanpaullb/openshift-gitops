@@ -1,0 +1,26 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: trivy
+  labels:
+    app: trivy
+spec:
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'trivy:latest'
+  resources: {}
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5  
+  strategy:
+    type: Docker
+  postCommit: {}
+  source:
+    type: Git
+    git:
+      uri: git@github.com:SancorSalud/example.git
+      ref: trivy
+    sourceSecret:
+      name: github-ssh-auth
+  runPolicy: Serial

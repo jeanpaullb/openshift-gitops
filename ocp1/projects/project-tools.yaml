@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: List
+metadata: {}
+items:
+- apiVersion: argoproj.io/v1alpha1
+  kind: ApplicationSet
+  metadata:
+    name: tools-set
+  spec:
+    generators:
+    - list:
+        elements:
+        - project: tools
+    template:
+      metadata:
+        finalizers:
+        - resources-finalizer.argocd.argoproj.io
+        name: '{{project}}'
+        namespace: openshift-gitops
+      spec:
+        destination:
+          namespace: '{{project}}'
+          server: https://kubernetes.default.svc
+        project: 'openshift-gitops'
+        source:
+          directory:
+            recurse: true
+          path: ocp1/projects/{{project}}
+          repoURL: ssh://git@github.com/jeanpaullb/app-demo-gitops.git
+          targetRevision: master
+        syncPolicy:
+          syncOptions:
+          - Validate=false
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true

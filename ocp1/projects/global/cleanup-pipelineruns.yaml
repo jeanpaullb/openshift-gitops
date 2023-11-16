@@ -1,0 +1,58 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cleanup-pipelineruns
+  namespace: openshift-pipelines
+spec:
+  schedule: "0 9 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccount: pipeline
+          containers:
+            - name: oc-cli
+              image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
+              env:
+                - name: NUM_TO_KEEP
+                  value: "5"
+              command:
+                - /bin/bash
+                - -c
+                - |
+                    # Get all pipelineruns, output format:  completionTime, app_label, namespace, name
+
+                    # Uncomment the one that you need
+                    # Using --> .spec.params.[name=APP_NAME].value
+                    oc get pipelinerun --all-namespaces -o jsonpath='{range .items[?(@.status.completionTime)]}{.status.completionTime}{";"}{.spec.params[?(@.name=="APP_NAME")].value}{";"}{.metadata.namespace}{";"}{.metadata.name}{"\n"}{end}' | sort > /tmp/pipelineruns
+                    
+                    # Using --> .status.pipelineSpec.params[name=APP_NAME].default
+                    # oc get pipelinerun --all-namespaces -o jsonpath='{range .items[?(@.status.completionTime)]}{.status.completionTime}{";"}{.status.pipelineSpec.params[?(@.name=="APP_NAME")].default}{";"}{.metadata.namespace}{";"}{.metadata.name}{"\n"}{end}' | sort > /tmp/pipelineruns
+
+                    # Using the app Label
+                    # oc get pipelinerun --all-namespaces -o jsonpath='{range .items[?(@.status.completionTime)]}{.status.completionTime}{";"}{.metadata.labels.app}{";"}{.metadata.namespace}{";"}{.metadata.name}{"\n"}{end}' | sort > /tmp/pipelineruns
+                    
+                    # Loop by (label and namespace) without repeating
+                    # getting for each app in its namespace all pipelineruns to remove except the $NUM_TO_KEEP
+                    for pipelinerunMetadata in $(cat /tmp/pipelineruns | awk -F';' '{print $2 "," $3}' | sort -u)
+                    do
+                        # Set label and namespace in vars 
+                        IFS=',' read -ra ADDR  <<< $pipelinerunMetadata
+                        
+                        appName=${ADDR[0]}
+                        appNamespace=${ADDR[1]}
+                        
+                        echo "appName="$appName
+                        echo "appNamespace="$appNamespace
+                        
+                        # filter pipelineruns by label:
+                        TO_DELETE="$(awk -F';' -v app=$appName -v namespace=$appNamespace '{if ($2==app && $3==namespace) {print $NF} }' /tmp/pipelineruns | head -n -${NUM_TO_KEEP})";
+                        echo -e $TO_DELETE "\n"
+
+                        # delete all pipelineruns in namespace: 
+                        test -n "$TO_DELETE" && oc delete pipelinerun ${TO_DELETE} -n $appNamespace  || true                        
+                    done
