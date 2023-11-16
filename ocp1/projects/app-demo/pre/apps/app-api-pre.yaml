@@ -13,7 +13,7 @@ items:
       server: https://kubernetes.default.svc
     project: app-demo-pre
     source:
-      path: app-api/openshift/overlays/pre
+      path: overlays/pre
       repoURL: git@github.com/jeanpaullb/app-demo-gitops.git
       targetRevision: main
     syncPolicy:
