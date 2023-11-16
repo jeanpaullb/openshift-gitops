@@ -90,17 +90,19 @@ spec:
     - name: build-push-image
       params:
         - name: VERSION
-          value: '17'
+          value: 'latest'
         - name: PATH_CONTEXT
           value: $(workspaces.source.path)/target
         - name: IMAGE
           value: >-
             image-registry.openshift-image-registry.svc:5000/$(params.PROJECT_NAME)/$(params.APP_NAME):$(params.TAG_IMAGE)
+        - name: TLSVERIFY
+          value: 'false'
       runAfter:
         - static-code-analysis
       taskRef:
         kind: ClusterTask
-        name: redhat-s2i-java
+        name: s2i-java
       workspaces:
         - name: source
           workspace: source-code
