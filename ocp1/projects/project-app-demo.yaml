@@ -55,10 +55,6 @@ items:
         elements:
         - env: dev
           project: app-demo
-        - env: test
-          project: app-demo
-        - env: pre
-          project: app-demo
     template:
       metadata:
         finalizers:
