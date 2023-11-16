@@ -10,7 +10,7 @@ spec:
     - default: app-demo-dev
       name: PROJECT_NAME
       type: string
-    - default: 'git@github.com:jeanpaullb/app-demo.git'
+    - default: 'https://github.com/jeanpaullb/app-demo.git'
       name: GIT_REPOSITORY
       type: string
     - default: springboot-helloworld
@@ -70,7 +70,7 @@ spec:
         - name: CONTEXT_PATH
           value: $(params.CONTEXT_PATH)
         - name: SONAR_URL
-          value: 'http://ams01-sonarqube.sonarqube.svc:9000/'
+          value: 'http://sonarqube:9000/'
         - name: PROJECT_KEY
           value: $(params.APP_NAME)
       runAfter:
