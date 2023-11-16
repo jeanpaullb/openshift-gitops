@@ -27,7 +27,7 @@ items:
             recurse: true
           path: ocp1/projects/{{project}}
           repoURL: ssh://git@github.com/jeanpaullb/app-demo-gitops.git
-          targetRevision: master
+          targetRevision: main
         syncPolicy:
           syncOptions:
           - Validate=false
