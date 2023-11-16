@@ -12,9 +12,9 @@ data:
       <!-- Credenciales para autenticación -->
       <servers>
           <server>
-              <id>nexus-sancor</id>
-              <username>deployer</username>
-              <password>S4nc0rS4lud</password>
+              <id>nexus-demo</id>
+              <username>admin</username>
+              <password>admin123</password>
           </server>
       </servers>
 
@@ -22,7 +22,7 @@ data:
           <mirror>
               <id>nexus</id>
               <mirrorOf>*</mirrorOf>
-              <url>http://nexus-nexus.apps.ams01-noprod.ams.red/repository/maven-public/</url>
+              <url>http://nexus-nexus.apps.cluster-zg2lr.zg2lr.sandbox984.opentlc.com/repository/maven-public/</url>
           </mirror>
       </mirrors>
     </settings>
